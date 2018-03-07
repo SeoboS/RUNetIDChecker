@@ -1,0 +1,53 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <script src="jquery-3.2.1.min.js"></script>
+    <script src="jquery.form.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+    
+
+    <title>Getting Started Extension's Popup</title>
+    <style type="text/css">
+      body {
+        margin: 10px;
+        white-space: nowrap;
+      }
+
+      h1 {
+        font-size: 15px;
+      }
+
+      #container {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+    -->
+    <!-- <script src="popup.js"></script> -->
+
+  </head>
+
+  <body>
+    <h1>Batch User Lookup</h1>
+    <div id="container">
+      <form>
+        <br>Filename:<br>
+        <input type="text" id="filename" name="file">
+        <button type="button" class="btn" id="batchUserLookup">Batch Lookup!</button>
+      </form>
+    </div>
+  </body>
+  <script src="main.js"></script>
+</html>

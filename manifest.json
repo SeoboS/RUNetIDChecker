@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+
+  "name": "Batch User Lookup",
+  "description": "This allows the user to look up a specific keyterm in the Rutgers User Lookup tool",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "http://*/*",
+    "https://*/*",
+    "webNavigation",
+    "https://sakai.rutgers.edu/addpart-lookup.jsp",
+    "https://sakai.rutgers.edu/*"
+  ]
+}
