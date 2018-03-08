@@ -6,20 +6,17 @@ Date Revised: 3/8/2018
 var errors = [];
 var results = [];
 var resR = 0;
-var data;
 var dataCnt = 0;
 var RESULT_FILENAME = "results.txt";
 var ERROR_FILENAME = "errors.txt";
 var SUBMIT_WAIT_TIME_INTERVAL = 250;
+var netid, data, searchTerm;
 
 /*
 Setting local scope for variables
 */
-function main(){
-	var netid;
-	var searchTerm;
-	document.getElementById('fileInput').addEventListener('change',readFile);
-}
+document.getElementById('fileInput').addEventListener('change',readFile);
+
 
 function readFile(e){
 	//only reads xls, csv, or txt files
@@ -58,7 +55,12 @@ function searchMain(data){
 	}
 
 	chrome.runtime.onMessage.addListener(lookUpAnotherUser);
-	chrome.webNavigation.onCommitted.addListener( function(details){
+	chrome.webNavigation.onCommitted.addListener(onCommit);
+
+	submitForm(netid);
+}
+
+function onCommit(details){
 		if (details.TransitionType != "auto_subframe"){ //very important for disregarding iframes
 			//probably fires multiple times in some cases
 			chrome.tabs.executeScript(null,{file: "currentPage.js"},checkPageAndSearch);
@@ -66,10 +68,8 @@ function searchMain(data){
 		else{
 			console.log("Auto subframes loading detected");
 		}
-	});
-
-	submitForm(netid);
 }
+
 /*
 console.log statements here seems to break things
 */
@@ -150,6 +150,7 @@ function storeResult(result){
 		document.body.appendChild(element);
 		createDownloadButton(RESULT_FILENAME,results);
 		createDownloadButton(ERROR_FILENAME,errors);
+		resetAll();
 		return 0;
 	}
 	else{ // else update inputs
@@ -207,4 +208,12 @@ function sendMessageToPageScript(message){
 }
 
 
-main();
+function resetAll(){
+	chrome.runtime.onMessage.removeListener(lookUpAnotherUser);
+	chrome.webNavigation.onCommitted.removeListener(onCommit);
+	errors = [];
+	results = [];
+	resR = 0;
+	dataCnt = 0;
+	document.getElementById("fileInput").value="";
+}
