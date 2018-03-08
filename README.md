@@ -1,24 +1,26 @@
 # RUNetIDChecker
-Automates checking a RU student's netid against a search query
+Automates checking a RU student's netid against several search queries.  
 
-Features:
+Features:  
 * Reads a .csv file with a list of netids and search queries.
+* Can add an unlimited amount of search queries
+* Returns the number of validated netids and number of invalid netids
+* Reports in a file, which search queries failed and the invalid netids
+* Random wait time added in between searches  
 
 
 
 .csv file format example (can have unlimited amount of search terms):
 
-netid,searchterm1,searchterm2
-ss2468,SCHOOL OF ENGINEERING
-al93,SCHOOL OF ENGINEERING,/18
-yu1,SCHOOL OF ARTS,/17
+netid,searchterm1,searchterm2  
+ss2468,SCHOOL OF ENGINEERING  
+al93,SCHOOL OF ENGINEERING,/18  
+yu1,SCHOOL OF ARTS,/17  
+  
+output (format for each netid: searchTerm1 found, searchTerm2 found):  
+  
+true  
+true, false  
+false, true  
 
-output:
 
-true
-true, false
-false, true
-
-searchTerm1 found, searchTerm2 found
-al93 is in school of engineering and is not graduating in 2018
-yu1 is not in school of arts and science and is graduating in 2017
