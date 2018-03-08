@@ -1,13 +1,20 @@
-// there are some concurrency issues. probably becuase of the executescript statement
-// all of thsi happens in the context of the chrome extension. executeScript allows the context to switch tot he current open tab
+/*
+Author: Seobo Shim
+Date Revised: 3/8/2018
+*/
 
 var errors = [];
 var results = [];
+var resR = 0;
 var data;
 var dataCnt = 0;
-var resultFileName = "results.txt";
-var errorFileName = "errors.txt";
+var RESULT_FILENAME = "results.txt";
+var ERROR_FILENAME = "errors.txt";
+var SUBMIT_WAIT_TIME_INTERVAL = 250;
 
+/*
+Setting local scope for variables
+*/
 function main(){
 	var netid;
 	var searchTerm;
@@ -16,7 +23,7 @@ function main(){
 
 function readFile(e){
 	//only reads xls, csv, or txt files
-	console.log("readingfile");
+	//console.log("readingfile");
 	var file = fileInput.files[0];
 	var excel = "application/vnd.ms-excel";
 
@@ -45,7 +52,7 @@ function searchMain(data){
 	}
 	else{// TODO make multiple search terms
 		searchTerm = [];
-		for (var i = data[dataCnt].length-1; i > 0; --i){
+		for (var i = 1; i < data[dataCnt].length; ++i){
 			searchTerm.push(data[dataCnt][i]);
 		}
 	}
@@ -53,6 +60,7 @@ function searchMain(data){
 	chrome.runtime.onMessage.addListener(lookUpAnotherUser);
 	chrome.webNavigation.onCommitted.addListener( function(details){
 		if (details.TransitionType != "auto_subframe"){ //very important for disregarding iframes
+			//probably fires multiple times in some cases
 			chrome.tabs.executeScript(null,{file: "currentPage.js"},checkPageAndSearch);
 		}
 		else{
@@ -62,9 +70,11 @@ function searchMain(data){
 
 	submitForm(netid);
 }
-
+/*
+console.log statements here seems to break things
+*/
 function checkPageAndSearch(page){
-	//console.log(searchTerm);
+	
 	page=page[0];
 	//console.log(page);
 	if (page=="Info"){ // TODO adjust to handle multiple search terms
@@ -73,14 +83,16 @@ function checkPageAndSearch(page){
 				if (chrome.runtime.lastError) {
 		      		console.log('There as an error injecting script : \n' + chrome.runtime.lastError.message);
 		      		return -1;
-		  		}						
+		  		}
 			});
 		});
 	}
 	else if (page=="InfoNotFound"){ // invalid netid or search term
 		errors.push(netid)
-		lookUpAnotherUser(false,results); // invalid netid will result in a false
+		lookUpAnotherUser(false); // invalid netid will result in a false
 	}
+	//console.log(netid);	
+	//console.log(searchTerm);
 }
 
 
@@ -94,24 +106,36 @@ function lookUpAnotherUser(result){
 }
 
 function storeResult(result){
-	results.push(result); // allow for multiple results
-	//results.push(result);
-	if (data.length == dataCnt+1){ // if all netids checked
-		res = results.reverse();
-		err = errors.reverse();
+	//console.log(result);
+	results[resR]=result;
+	++resR;
+	if (data.length-1 == dataCnt){ // if all netids checked
 		console.log("errors:");
-		console.log(err);
+		console.log(errors);
 		console.log("results:");
-		console.log(res);
+		console.log(results);
 		console.log("EXIT");
 		var numTrue = 0;
 		for (var i = 0; i <results.length; i++){
-			if (results[i])
+			if (results[i] instanceof Array){
+				var falseResultExist = false;
+				for (var j = 0; j < results[i].length; j++){
+					if (!results[i][j]){ // if even one false exists
+						falseResultExist = true;
+						break;
+					}
+				}
+				if (!falseResultExist){
+					numTrue++;
+				}
+			}
+			else if (results[i]){
 				numTrue++;
+			}
 		}
 		var numError = 0;
 		for (var i = 0; i <errors.length; i++){
-			if (results[i])
+			if (errors[i])
 				numError++;
 		}
 		var element;
@@ -124,8 +148,8 @@ function storeResult(result){
 		element = document.createElement('p');
 		element.appendChild(document.createTextNode("# of invalid NetIDs: " + numError));
 		document.body.appendChild(element);
-		createDownloadButton(resultFileName,res);
-		createDownloadButton(errorFileName,err);
+		createDownloadButton(RESULT_FILENAME,results);
+		createDownloadButton(ERROR_FILENAME,errors);
 		return 0;
 	}
 	else{ // else update inputs
@@ -138,7 +162,7 @@ function storeResult(result){
 		}
 		else{
 			searchTerm = [];
-			for (var i = data[dataCnt].length-1; i > 0; --i){
+			for (var i = 1; i < data[dataCnt].length; ++i){
 				searchTerm.push(data[dataCnt][i]);
 			}
 		}
@@ -157,17 +181,18 @@ function createDownloadButton(filename, text) {
 }
 
 function submitForm(netid){
-	chrome.tabs.executeScript(null, {code: 'var netid = ' + JSON.stringify(netid)}, function(){
-		if (chrome.runtime.lastError) {
-		  console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
-	  	}
-		chrome.tabs.executeScript(null,{ file: "submitForm.js" }, function(){ // script must first be executed on page
+  	setTimeout(function(){
+		chrome.tabs.executeScript(null, {code: 'var netid = ' + JSON.stringify(netid)}, function(){
 			if (chrome.runtime.lastError) {
-		      console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
+			  console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
 		  	}
-		});		
-	} );
-	
+			chrome.tabs.executeScript(null,{ file: "submitForm.js" }, function(){ // script must first be executed on page
+				if (chrome.runtime.lastError) {
+			      console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
+			  	}
+			});
+		} );
+	} , Math.floor(Math.random()*SUBMIT_WAIT_TIME_INTERVAL));
 }
 
 function sendMessageToPageScript(message){
