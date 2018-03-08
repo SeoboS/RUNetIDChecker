@@ -1,7 +1,6 @@
 // there are some concurrency issues. probably becuase of the executescript statement
 // all of thsi happens in the context of the chrome extension. executeScript allows the context to switch tot he current open tab
 
-
 var errors = [];
 var results = [];
 var data;
@@ -105,8 +104,28 @@ function storeResult(result){
 		console.log("results:");
 		console.log(res);
 		console.log("EXIT");
-		downloadResult(resultFileName,res);
-		downloadResult(errorFileName,err);
+		var numTrue = 0;
+		for (var i = 0; i <results.length; i++){
+			if (results[i])
+				numTrue++;
+		}
+		var numError = 0;
+		for (var i = 0; i <errors.length; i++){
+			if (results[i])
+				numError++;
+		}
+		var element;
+		element = document.createElement('p');
+		element.appendChild(document.createTextNode("# of searched NetIDs: " + results.length));
+		document.body.appendChild(element);
+		element = document.createElement('p');
+		element.appendChild(document.createTextNode("Queries Found: " + numTrue));
+		document.body.appendChild(element);
+		element = document.createElement('p');
+		element.appendChild(document.createTextNode("# of invalid NetIDs: " + numError));
+		document.body.appendChild(element);
+		createDownloadButton(resultFileName,res);
+		createDownloadButton(errorFileName,err);
 		return 0;
 	}
 	else{ // else update inputs
@@ -127,7 +146,7 @@ function storeResult(result){
 	}
 }
 
-function downloadResult(filename, text) {
+function createDownloadButton(filename, text) {
   var element = document.createElement('a');
   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
   element.setAttribute('download', filename);
