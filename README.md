@@ -9,15 +9,17 @@ Features:
 * Random wait time added in between searches  
 
 
+# Example
 
-.csv file format example (can have unlimited amount of search terms):
+**.csv file format example** (can have unlimited amount of search terms):
 
 netid,searchterm1,searchterm2  
 ss2468,SCHOOL OF ENGINEERING  
 al93,SCHOOL OF ENGINEERING,/18  
 yu1,SCHOOL OF ARTS,/17  
-  
-output (format for each netid: searchTerm1 found, searchTerm2 found):  
+
+
+**output** (format for each netid: searchTerm1 found, searchTerm2 found):  
   
 true  
 true, false  
