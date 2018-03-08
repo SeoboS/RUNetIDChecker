@@ -27,6 +27,16 @@
         display: flex;
         justify-content: space-between;
       }
+      a{
+        height: 80px;
+        width: 100px;
+        margin: 10px;
+        background-color: #9BF091;
+        padding: 5px;
+        border-width: 1.5px;
+        border-style: solid;
+        element.style.display = 'block';
+      }
     </style>
   </head>
 
@@ -34,11 +44,12 @@
     <h1>Batch User Lookup</h1>
     <div id="container">
       <form>
-        <br>Filename:<br>
+        Filename:
+        <br>
         <input type="file" id="fileInput" name="file">
-        <button type="button" class="btn" id="batchUserLookup">Batch Lookup!</button>
       </form>
     </div>
+    <br>
   </body>
   <script src="main.js"></script>
 </html>
