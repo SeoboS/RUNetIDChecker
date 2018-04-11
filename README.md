@@ -22,5 +22,5 @@ yu1,SCHOOL OF ARTS,/17
 **output** (if all search terms found or not [searchterm1 found, searchterm2 found]):  
   
 true  
-false [true, false] 
-false [false, true]
+false [true, false]  
+false [false, true]  
