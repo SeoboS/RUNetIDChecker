@@ -23,7 +23,13 @@ for (var i =0; i < arrLen; ++i){
 		results.push(false);
 	}
 }
-sendMessageToExtension(results);
+if (results.includes(false)){
+	sendMessageToExtension(false);
+}
+else{
+	sendMessageToExtension(true);
+}
+
 
 function sendMessageToExtension(message){
 	chrome.runtime.sendMessage(message)

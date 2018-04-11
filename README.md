@@ -19,10 +19,8 @@ al93,SCHOOL OF ENGINEERING,/18
 yu1,SCHOOL OF ARTS,/17  
 
 
-**output** (format for each netid: searchTerm1 found, searchTerm2 found):  
+**output** (if all search terms found or not [searchterm1 found, searchterm2 found]):  
   
 true  
-true, false  
-false, true  
-
-
+false [true, false] 
+false [false, true]

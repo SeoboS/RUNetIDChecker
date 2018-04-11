@@ -1,6 +1,6 @@
 /*
 Author: Seobo Shim
-Date Revised: 3/8/2018
+Date Revised: 4/1/2018
 */
 
 var errors = [];
@@ -9,7 +9,7 @@ var resR = 0;
 var dataCnt = 0;
 var RESULT_FILENAME = "results.txt";
 var ERROR_FILENAME = "errors.txt";
-var SUBMIT_WAIT_TIME_INTERVAL = 250;
+var SUBMIT_WAIT_TIME_INTERVAL = 1250;
 var netid, data, searchTerm;
 
 /*
@@ -41,13 +41,11 @@ function readFile(e){
 
 
 function searchMain(data){
-
-	dataCnt = dataCnt + 1;
 	netid = data[dataCnt][0];
 	if (data[dataCnt].length == 2){
 		searchTerm = data[dataCnt][1];
 	}
-	else{// TODO make multiple search terms
+	else{
 		searchTerm = [];
 		for (var i = 1; i < data[dataCnt].length; ++i){
 			searchTerm.push(data[dataCnt][i]);
@@ -91,6 +89,18 @@ function checkPageAndSearch(page){
 		errors.push(netid)
 		lookUpAnotherUser(false); // invalid netid will result in a false
 	}
+	else if (page=="BlankSearch"){ //redo's search
+		chrome.tabs.executeScript(null,{file: "lookUpAnotherUser.js"},function(){
+			if (chrome.runtime.lastError) {
+			  console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
+		  	}
+		  	console.log(netid);
+			submitForm(netid);
+		});
+	}
+	else{
+		console.log("random case");
+	}
 	//console.log(netid);	
 	//console.log(searchTerm);
 }
@@ -106,9 +116,10 @@ function lookUpAnotherUser(result){
 }
 
 function storeResult(result){
-	//console.log(result);
+	//console.log(results);
 	results[resR]=result;
 	++resR;
+	console.log(dataCnt);
 	if (data.length-1 == dataCnt){ // if all netids checked
 		console.log("errors:");
 		console.log(errors);
