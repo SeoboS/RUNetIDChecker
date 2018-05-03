@@ -1,9 +1,4 @@
 <!doctype html>
-<!--
- This page is shown when the extension button is clicked, because the
- "browser_action" field in manifest.json contains the "default_popup" key with
- value "popup.html".
- -->
 <html>
   <head>
     <script src="static/js/jquery-3.2.1.min.js"></script>
@@ -47,8 +42,10 @@
 
   <body>
     <h1>Batch User Lookup</h1>
+    <div id="error">
+    </div>
     <div id="container">
-      <form>
+      <form id="fileForm">
         Filename:
         <br>
         <input type="file" id="fileInput" name="file">

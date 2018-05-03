@@ -1,56 +1,56 @@
 /*
-Author: Seobo Shim
-Date Revised: 4/1/2018
+* @Author: seobo
+* @Date:   2018-04-11 11:38:18
+* @Last Modified by:   seobo
+* @Last Modified time: 2018-05-03 10:29:05
 */
 
 var errors = [];
 var results = [];
-var resR = 0;
-var dataCnt = 0;
+var resultRow = 0;
+var netIDCount = 0;
 var RESULT_FILENAME = "results.txt";
 var ERROR_FILENAME = "errors.txt";
 var SUBMIT_WAIT_TIME_INTERVAL = 1250;
+var USER_LOOKUP_LINK = "sakai.rutgers.edu/addpart-lookup.jsp";
 var netid, data, searchTerm;
 
-/*
-Setting local scope for variables
-*/
+chrome.tabs.query({active:true, currentWindow: true}, function(tabs){
+	var tab = tabs[0];
+	var url = tab.url;
+	if (!url.includes(USER_LOOKUP_LINK)){
+		var content = document.createElement('b');
+		content.innerHTML = "Please navigate to Sakai's NetID User Lookup Page, (" + USER_LOOKUP_LINK + ")";
+		error(content);
+		document.getElementById('container').removeChild(document.getElementById('fileForm'));
+	}
+});
+
 document.getElementById('fileInput').addEventListener('change',readFile);
 
-
+/***
+Only reads xls, csv, or txt files
+*/
 function readFile(e){
-	//only reads xls, csv, or txt files
-	//console.log("readingfile");
 	var file = fileInput.files[0];
-	var excel = "application/vnd.ms-excel";
+	var excel_type = "application/vnd.ms-excel";
 
-	if (file.type.match(excel) || file.type.match(/text.*/)){
+	if (file.type.match(excel_type) || file.type.match(/text.*/)){
 		var reader = new FileReader();
 		reader.onload = function(){
 			data = $.csv.toArrays(reader.result);
-			console.log(data);
-			searchMain(data);	
+			searchMain();
 		};
-
 		reader.readAsText(file);
 	} 
 	else{
-		throw "Not valid. File type: " + file.type;
+		error("Not valid file type: " + file.type);
 	}
 }
 
-
-function searchMain(data){
-	netid = data[dataCnt][0];
-	if (data[dataCnt].length == 2){
-		searchTerm = data[dataCnt][1];
-	}
-	else{
-		searchTerm = [];
-		for (var i = 1; i < data[dataCnt].length; ++i){
-			searchTerm.push(data[dataCnt][i]);
-		}
-	}
+function searchMain(){
+	netid = data[netIDCount][0];
+	getSearchTerms();
 
 	chrome.runtime.onMessage.addListener(lookUpAnotherUser);
 	chrome.webNavigation.onCommitted.addListener(onCommit);
@@ -58,10 +58,38 @@ function searchMain(data){
 	submitForm(netid);
 }
 
+function getSearchTerms(){
+	if (data[netIDCount].length == 2){
+		searchTerm = data[netIDCount][1];
+	}
+	else{
+		searchTerm = [];
+		for (var i = 1; i < data[netIDCount].length; ++i){
+			searchTerm.push(data[netIDCount][i]);
+		}
+	}
+
+}
+
+function submitForm(netid){
+  	setTimeout(function(){
+		chrome.tabs.executeScript(null, {code: 'var netid = ' + JSON.stringify(netid)}, function(){
+			if (chrome.runtime.lastError) {
+			  	throw 'There was an error injecting script : \n' + chrome.runtime.lastError.message;
+		  	}
+			chrome.tabs.executeScript(null,{ file: "submitForm.js" }, function(){
+				if (chrome.runtime.lastError) {
+			      throw 'There was an error injecting script : \n' + chrome.runtime.lastError.message;
+			  	}
+			});
+		});
+	} , Math.floor(Math.random()*SUBMIT_WAIT_TIME_INTERVAL));
+}
+
+
 function onCommit(details){
-		if (details.TransitionType != "auto_subframe"){ //very important for disregarding iframes
-			//probably fires multiple times in some cases
-			chrome.tabs.executeScript(null,{file: "currentPage.js"},checkPageAndSearch);
+		if (details.TransitionType != "auto_subframe"){ //very important for disregarding iframes, probably fires multiple times in some cases
+			chrome.tabs.executeScript(null,{file: "currentPage.js"},checkStudentInfoPageAndSearch);
 		}
 		else{
 			console.log("Auto subframes loading detected");
@@ -71,10 +99,8 @@ function onCommit(details){
 /*
 console.log statements here seems to break things
 */
-function checkPageAndSearch(page){
-	
+function checkStudentInfoPageAndSearch(page){
 	page=page[0];
-	//console.log(page);
 	if (page=="Info"){ // TODO adjust to handle multiple search terms
 		chrome.tabs.executeScript(null, {code: 'var searchTerm = ' + JSON.stringify(searchTerm)}, function(){
 			chrome.tabs.executeScript(null,{file: "checkPage.js"}, function(){
@@ -92,17 +118,14 @@ function checkPageAndSearch(page){
 	else if (page=="BlankSearch"){ //redo's search
 		chrome.tabs.executeScript(null,{file: "lookUpAnotherUser.js"},function(){
 			if (chrome.runtime.lastError) {
-			  console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
+			  throw 'There was an error injecting script : \n' + chrome.runtime.lastError.message;
 		  	}
-		  	console.log(netid);
 			submitForm(netid);
 		});
 	}
 	else{
-		console.log("random case");
+		console.log("random case, shouldn't happen often");
 	}
-	//console.log(netid);	
-	//console.log(searchTerm);
 }
 
 
@@ -111,16 +134,21 @@ function lookUpAnotherUser(result){
 		if (chrome.runtime.lastError) {
 		  console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
 	  	}
-		storeResult(result)
+		storeResult(result);
 	});
 }
 
 function storeResult(result){
-	//console.log(results);
-	results[resR]=result;
-	++resR;
-	console.log(dataCnt);
-	if (data.length-1 == dataCnt){ // if all netids checked
+	results[resultRow]=result;
+	++resultRow;
+	console.log(netIDCount);
+	if (netIDCount < data.length-1){
+		++netIDCount;
+		netid = data[netIDCount][0];
+		getSearchTerms();
+		submitForm(netid);
+	}
+	else if (data.length-1 == netIDCount){ // if all netids checked
 		console.log("errors:");
 		console.log(errors);
 		console.log("results:");
@@ -131,7 +159,7 @@ function storeResult(result){
 			if (results[i] instanceof Array){
 				var falseResultExist = false;
 				for (var j = 0; j < results[i].length; j++){
-					if (!results[i][j]){ // if even one false exists
+					if (!results[i][j]){ // if even one false exists, true. so output is simply false or true
 						falseResultExist = true;
 						break;
 					}
@@ -164,22 +192,6 @@ function storeResult(result){
 		resetAll();
 		return 0;
 	}
-	else{ // else update inputs
-		++dataCnt;
-		//netid = netids.pop();
-		netid = data[dataCnt][0];
-		//searchTerm = searchTerms.pop();
-		if (data[dataCnt].length == 2){
-			searchTerm = data[dataCnt][1];
-		}
-		else{
-			searchTerm = [];
-			for (var i = 1; i < data[dataCnt].length; ++i){
-				searchTerm.push(data[dataCnt][i]);
-			}
-		}
-		submitForm(netid);
-	}
 }
 
 function createDownloadButton(filename, text) {
@@ -192,39 +204,23 @@ function createDownloadButton(filename, text) {
   document.body.appendChild(element);
 }
 
-function submitForm(netid){
-  	setTimeout(function(){
-		chrome.tabs.executeScript(null, {code: 'var netid = ' + JSON.stringify(netid)}, function(){
-			if (chrome.runtime.lastError) {
-			  console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
-		  	}
-			chrome.tabs.executeScript(null,{ file: "submitForm.js" }, function(){ // script must first be executed on page
-				if (chrome.runtime.lastError) {
-			      console.log('There was an error injecting script : \n' + chrome.runtime.lastError.message);
-			  	}
-			});
-		} );
-	} , Math.floor(Math.random()*SUBMIT_WAIT_TIME_INTERVAL));
-}
-
-function sendMessageToPageScript(message){
-	if (message == null){
-		throw "Message sent is null";
-	}
-	// sends the search term to get it's page checked
-	chrome.tabs.query({active:true, currentWindow: true}, function(tab){
-		chrome.tabs.sendMessage(tab[0].id, message);
-	// assumption here that first tab queried is valid. Should be because it's active and current!
-	});
-}
-
-
+/***
+Resets listener, counts, global variables.
+Call when finished with search query.
+*/
 function resetAll(){
 	chrome.runtime.onMessage.removeListener(lookUpAnotherUser);
 	chrome.webNavigation.onCommitted.removeListener(onCommit);
 	errors = [];
 	results = [];
-	resR = 0;
-	dataCnt = 0;
+	resultRow = 0;
+	netIDCount = 0;
 	document.getElementById("fileInput").value="";
+}
+
+/***
+Report error on extension screen,
+*/
+function error(e){
+	document.getElementById('error').appendChild(e);
 }

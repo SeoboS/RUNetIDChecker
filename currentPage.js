@@ -1,5 +1,11 @@
+/*
+* @Author: seobo
+* @Date:   2018-04-11 11:38:18
+* @Last Modified by:   seobo
+* @Last Modified time: 2018-05-03 10:18:41
+*/
 //identifies current page by number of forms
-
+var searchResult = 0;
 if (document.forms.length > 1){
 	var notfound = 0;
 	var blanksearch = 0;
@@ -25,3 +31,6 @@ if (document.forms.length > 1){
 else{
 	"Lookup";
 }
+// switch(searchRsult) {
+// 	case "-1":
+// }
