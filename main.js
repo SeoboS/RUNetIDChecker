@@ -2,19 +2,22 @@
 * @Author: seobo
 * @Date:   2018-04-11 11:38:18
 * @Last Modified by:   seobo
-* @Last Modified time: 2018-05-03 10:29:05
+* @Last Modified time: 2018-05-04 01:08:15
 */
 
-var errors = [];
-var results = [];
-var resultRow = 0;
-var netIDCount = 0;
-var RESULT_FILENAME = "results.txt";
-var ERROR_FILENAME = "errors.txt";
+var RESULT_FILENAME = "results.csv";
+var ERROR_FILENAME = "netidErrors.csv";
 var SUBMIT_WAIT_TIME_INTERVAL = 1250;
 var USER_LOOKUP_LINK = "sakai.rutgers.edu/addpart-lookup.jsp";
-var netid, data, searchTerm;
 
+var netids = [];
+var netidErrors = [];
+var results = [];
+var resultRow = 0, netIDCount = 0;
+var netid, data, searchTerm;
+/***
+Checks if user is on user lookup page
+*/
 chrome.tabs.query({active:true, currentWindow: true}, function(tabs){
 	var tab = tabs[0];
 	var url = tab.url;
@@ -29,7 +32,8 @@ chrome.tabs.query({active:true, currentWindow: true}, function(tabs){
 document.getElementById('fileInput').addEventListener('change',readFile);
 
 /***
-Only reads xls, csv, or txt files
+Only reads xls, csv, or txt files.
+stores contents in data
 */
 function readFile(e){
 	var file = fileInput.files[0];
@@ -50,6 +54,7 @@ function readFile(e){
 
 function searchMain(){
 	netid = data[netIDCount][0];
+	netids.push(netid);
 	getSearchTerms();
 
 	chrome.runtime.onMessage.addListener(lookUpAnotherUser);
@@ -112,16 +117,11 @@ function checkStudentInfoPageAndSearch(page){
 		});
 	}
 	else if (page=="InfoNotFound"){ // invalid netid or search term
-		errors.push(netid)
+		netidErrors.push(netid)
 		lookUpAnotherUser(false); // invalid netid will result in a false
 	}
-	else if (page=="BlankSearch"){ //redo's search
-		chrome.tabs.executeScript(null,{file: "lookUpAnotherUser.js"},function(){
-			if (chrome.runtime.lastError) {
-			  throw 'There was an error injecting script : \n' + chrome.runtime.lastError.message;
-		  	}
-			submitForm(netid);
-		});
+	else if (page=="BlankSearch"){
+		error ("Blank search found. Check your input file for empty rows");
 	}
 	else{
 		console.log("random case, shouldn't happen often");
@@ -141,16 +141,16 @@ function lookUpAnotherUser(result){
 function storeResult(result){
 	results[resultRow]=result;
 	++resultRow;
-	console.log(netIDCount);
 	if (netIDCount < data.length-1){
 		++netIDCount;
 		netid = data[netIDCount][0];
+		netids.push(netid);
 		getSearchTerms();
 		submitForm(netid);
 	}
 	else if (data.length-1 == netIDCount){ // if all netids checked
-		console.log("errors:");
-		console.log(errors);
+		console.log("netidErrors:");
+		console.log(netidErrors);
 		console.log("results:");
 		console.log(results);
 		console.log("EXIT");
@@ -173,10 +173,21 @@ function storeResult(result){
 			}
 		}
 		var numError = 0;
-		for (var i = 0; i <errors.length; i++){
-			if (errors[i])
+		for (var i = 0; i <netidErrors.length; i++){
+			if (netidErrors[i])
 				numError++;
 		}
+
+		let csvContent = "";
+		for (var i = 0; i < results.length; ++i){
+			var row;
+			if(results[i] instanceof Array)
+		   		row = results[i].join(",");
+			else
+				row = results[i];
+		   csvContent += netids[i] + "," + row + "\r\n";
+		}
+
 		var element;
 		element = document.createElement('p');
 		element.appendChild(document.createTextNode("# of searched NetIDs: " + results.length));
@@ -187,8 +198,8 @@ function storeResult(result){
 		element = document.createElement('p');
 		element.appendChild(document.createTextNode("# of invalid NetIDs: " + numError));
 		document.body.appendChild(element);
-		createDownloadButton(RESULT_FILENAME,results);
-		createDownloadButton(ERROR_FILENAME,errors);
+		createDownloadButton(RESULT_FILENAME,csvContent);
+		createDownloadButton(ERROR_FILENAME,netidErrors);
 		resetAll();
 		return 0;
 	}
@@ -196,7 +207,8 @@ function storeResult(result){
 
 function createDownloadButton(filename, text) {
   var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  var uri = encodeURIComponent(text);
+  element.setAttribute('href', "data:text/csv;charset=utf-8," + uri);
   element.setAttribute('download', filename);
   element.setAttribute('id',filename);
 
@@ -211,7 +223,7 @@ Call when finished with search query.
 function resetAll(){
 	chrome.runtime.onMessage.removeListener(lookUpAnotherUser);
 	chrome.webNavigation.onCommitted.removeListener(onCommit);
-	errors = [];
+	netidErrors = [];
 	results = [];
 	resultRow = 0;
 	netIDCount = 0;

@@ -1,6 +1,8 @@
 /*
-Author: Seobo Shim
-Date Revised: 3/8/2018
+* @Author: seobo
+* @Date:   2018-04-11 11:38:18
+* @Last Modified by:   seobo
+* @Last Modified time: 2018-05-03 11:08:44
 */
 
 //assuming only one result
@@ -23,12 +25,13 @@ for (var i =0; i < arrLen; ++i){
 		results.push(false);
 	}
 }
-if (results.includes(false)){
-	sendMessageToExtension(false);
-}
-else{
-	sendMessageToExtension(true);
-}
+// if (results.includes(false)){
+// 	sendMessageToExtension(false);
+// }
+// else{
+// 	sendMessageToExtension(true);
+// }
+sendMessageToExtension(results);
 
 
 function sendMessageToExtension(message){
