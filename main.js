@@ -2,7 +2,7 @@
 * @Author: seobo
 * @Date:   2018-04-11 11:38:18
 * @Last Modified by:   seobo
-* @Last Modified time: 2018-05-04 01:08:15
+* @Last Modified time: 2018-05-04 01:21:51
 */
 
 var RESULT_FILENAME = "results.csv";
@@ -138,6 +138,10 @@ function lookUpAnotherUser(result){
 	});
 }
 
+/***
+If netids not all searched, gets search terms and submits form again
+Attempts to store result if all netids searched.
+*/
 function storeResult(result){
 	results[resultRow]=result;
 	++resultRow;
@@ -155,7 +159,9 @@ function storeResult(result){
 		console.log(results);
 		console.log("EXIT");
 		var numTrue = 0;
+		let csvContent = "";
 		for (var i = 0; i <results.length; i++){
+			let row;
 			if (results[i] instanceof Array){
 				var falseResultExist = false;
 				for (var j = 0; j < results[i].length; j++){
@@ -171,21 +177,17 @@ function storeResult(result){
 			else if (results[i]){
 				numTrue++;
 			}
+
+			if(results[i] instanceof Array)
+		   		row = results[i].join(",");
+			else
+				row = results[i];
+		    csvContent += netids[i] + "," + row + "\r\n";
 		}
 		var numError = 0;
 		for (var i = 0; i <netidErrors.length; i++){
 			if (netidErrors[i])
 				numError++;
-		}
-
-		let csvContent = "";
-		for (var i = 0; i < results.length; ++i){
-			var row;
-			if(results[i] instanceof Array)
-		   		row = results[i].join(",");
-			else
-				row = results[i];
-		   csvContent += netids[i] + "," + row + "\r\n";
 		}
 
 		var element;
