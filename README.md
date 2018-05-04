@@ -8,6 +8,9 @@ Features:
 * Reports in a file, which search queries failed and the invalid netids
 * Random wait time added in between searches  
 
+Notes:
+* Limit netid queries to about ~25-50 for reliability. Try increasing wait time for largers batches of queries.
+
 TODO:
 * Read/Write results from Google Sheets document
 
@@ -26,3 +29,10 @@ yu1,SCHOOL OF ARTS,/17
 true  
 true, false
 false, true
+
+
+How to use:
+1. Download files into any folder
+2. Enable Developer mode in chrome browser
+3. Visit chrome://extensions
+4. Select folder using "Load unpacked extension" option
