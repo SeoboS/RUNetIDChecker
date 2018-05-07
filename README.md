@@ -9,27 +9,9 @@ Features:
 * Random wait time added in between searches  
 
 Notes:
-* Limit netid queries to about ~25-50 for reliability. Try increasing wait time for largers batches of queries.
 
 TODO:
 * Read/Write results from Google Sheets document
-
-# Example
-
-**.csv file format example** (can have unlimited amount of search terms):
-
-netid,searchterm1,searchterm2  
-ss2468,SCHOOL OF ENGINEERING  
-al93,SCHOOL OF ENGINEERING,/18  
-yu1,SCHOOL OF ARTS,/17  
-
-
-**output** (if all search terms found or not [searchterm1 found, searchterm2 found]):  
-  
-true  
-true, false
-false, true
-
 
 How to use:
 1. Download files into any folder

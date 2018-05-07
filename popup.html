@@ -5,6 +5,7 @@
     <script src="static/js/jquery.form.js"></script>
     <script src="static/js/jquery.csv.js"></script>
     <script src="static/js/jquery.csv.min.js"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
     <title>Batch User Lookup</title>
     <style type="text/css">
@@ -17,11 +18,12 @@
         font-size: 15px;
       }
 
-      #container {
+      #container{
         align-items: center;
         display: flex;
         justify-content: space-between;
       }
+
       a{
         background-color: #41BC32;
         padding: 5px;
@@ -49,6 +51,9 @@
         Filename:
         <br>
         <input type="file" id="fileInput" name="file">
+        <div class="checkbox">
+          <label><input id="postEnable" type="checkbox" value="post" checked>Send Data to GS</label>
+        </div>
       </form>
       <!-- <form id="textForm">
         <input type="text" id="textInput" name='textInput'>
