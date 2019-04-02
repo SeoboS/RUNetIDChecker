@@ -2,7 +2,7 @@
 * @Author: seobo
 * @Date:   2018-04-11 11:38:18
 * @Last Modified by:   seobo
-* @Last Modified time: 2018-05-07 19:17:03
+* @Last Modified time: 2019-04-01 23:24:22
 */
 
 var RESULT_FILENAME = "results.csv";
@@ -20,6 +20,8 @@ var postData; // boolean, whether we want to post the data to google script or n
 var netid, searchTerm, result; // global changing variables
 
 document.getElementById('fileInput').addEventListener('change',readFile);
+//var version = document.createTextNode(chrome.runtime.getManifest().version);
+//document.getElementById('version').appendChild(version);
 
 function PostObject(res){
 	this.netIDAndSearchResults = res;
@@ -275,5 +277,6 @@ function resetAll(){
 Report error on extension screen,
 */
 function error(e){
+	document.getElementById('error').appendChild(document.createTextNode("Error: "));
 	document.getElementById('error').appendChild(document.createTextNode(e));
 }

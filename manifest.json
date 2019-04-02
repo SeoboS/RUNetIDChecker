@@ -3,7 +3,7 @@
 
   "name": "Batch User Lookup",
   "description": "This allows the user to look up a specific keyterm in the Rutgers User Lookup tool",
-  "version": "1.0",
+  "version": "1.1",
 
   "browser_action": {
     "default_icon": "static/img/icon.png",

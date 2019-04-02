@@ -24,6 +24,15 @@
         justify-content: space-between;
       }
 
+      #version{
+        margin: 0px !important;
+        font: 8px !important;
+      }
+      hr{
+        margin-top: 0px;
+        margin-bottom: 0px;
+      }
+
       a{
         background-color: #41BC32;
         padding: 5px;
@@ -39,11 +48,16 @@
         border-style: solid;
         element.style.display = 'block';
       }
+      #error{
+        background-color: #f5ff44;
+      }
+
     </style>
   </head>
 
   <body>
-    <h1>Batch User Lookup</h1>
+    <h1><b>Batch User Lookup</b></h1>
+    <hr>
     <div id="error">
     </div>
     <div id="container">
@@ -51,9 +65,9 @@
         Filename:
         <br>
         <input type="file" id="fileInput" name="file">
-        <div class="checkbox">
+        <!--<div class="checkbox">
           <label><input id="postEnable" type="checkbox" value="post" checked>Send Data to GS</label>
-        </div>
+        </div>-->
       </form>
       <!-- <form id="textForm">
         <input type="text" id="textInput" name='textInput'>
